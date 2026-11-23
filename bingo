@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bingóvél</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* VOICE: glaðlegur bingósalur, skýr á skjávarpa yfir bekk
+   IDEA: rafmagnstöfla bingósalarins + kúlan sem var að detta úr búrinu
+   PICTURE: stór kúla með bókstaf og tölu, við hlið 75 talna ljósatöflu
+   COLOUR and TYPE: vínrauður grunnur, hefðbundnir B-I-N-G-O litir á kúlum; Rubik
+   LAYOUT: stjórnstika efst, kúla + kerfi vinstra megin, tafla hægra megin; staflast á síma */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7efe6,#24091a);--panel:light-dark(#fffaf4,#360f28);--ink:light-dark(#3a0d27,#fbeee4);
+--mute:light-dark(#8a6474,#c9a3b4);--line:light-dark(#e6d3c6,#53203f);--off:light-dark(#efe3d8,#2c0c20);
+--acc:#ff4d5e;--B:#2f7de1;--I:#e23a4b;--N:#d9d2c8;--G:#2aa65a;--O:#f3b21c}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Rubik,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(16px,3vw,36px) max(4vw,14px);max-width:1400px;margin:0 auto}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;margin-bottom:20px}
+h1{font-size:clamp(30px,4vw,46px);line-height:1.05;margin:0;font-weight:900;letter-spacing:-.01em}
+h1 span{display:inline-block;width:.9em;height:.9em;border-radius:50%;color:#fff;font-size:.62em;line-height:1.45em;text-align:center;margin-right:2px;vertical-align:.15em}
+h2{font-size:17px;margin:0 0 10px;font-weight:700}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;font-size:16px;color:inherit}
+button{min-height:44px;padding:0 16px;border-radius:12px;border:2px solid var(--line);background:var(--panel);cursor:pointer;font-weight:500}
+button:hover{border-color:var(--mute)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+.draw{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;font-size:20px;min-height:60px;padding:0 28px;border-radius:16px;width:100%}
+.draw:hover{filter:brightness(1.07);border-color:var(--acc)}
+select,input[type=text]{min-height:44px;border-radius:12px;border:2px solid var(--line);background:var(--panel);padding:0 12px}
+.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:18px}
+.stage{display:grid;gap:14px;justify-items:center;text-align:center}
+.ball{width:min(250px,64vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+background:radial-gradient(circle at 34% 28%,#fff8 0 8%,transparent 30%),radial-gradient(circle at 50% 55%,var(--c,#9a8),color-mix(in oklab,var(--c,#9a8),#000 38%) 78%);
+box-shadow:0 18px 30px -14px #0007,inset 0 -10px 24px #0004}
+.ball .face{width:62%;aspect-ratio:1;border-radius:50%;background:#fff;color:#1d0b14;display:grid;place-content:center;box-shadow:inset 0 2px 6px #0003}
+.face b{display:block;font-size:clamp(22px,5vw,34px);line-height:1;font-weight:700}
+.face strong{display:block;font-size:clamp(52px,13vw,84px);line-height:.95;font-weight:900;font-variant-numeric:tabular-nums}
+.face em{font-style:normal;font-size:15px;color:#6a5560;padding:0 10px}
+.ball.roll{animation:roll .55s cubic-bezier(.2,.8,.3,1.2)}
+@keyframes roll{0%{transform:translateY(-40px) rotate(-200deg) scale(.6);opacity:0}100%{transform:none;opacity:1}}
+.count{font-size:15px;color:var(--mute)}.count b{color:var(--ink);font-size:22px}
+.hist{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:44px}
+.mini{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;color:#fff;background:var(--c);flex:none}
+.mini.N,.cell.on.N{color:#1d0b14}
+.pat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:min(200px,60vw);margin:0 auto}
+.pc{aspect-ratio:1;border-radius:6px;background:var(--off);border:1px solid var(--line);font-size:11px;display:grid;place-items:center;color:var(--mute);padding:0}
+.pc.hit{background:var(--acc);border-color:var(--acc);color:#fff}
+.pat.edit .pc{cursor:pointer}
+.pdesc{font-size:15px;color:var(--mute);margin:10px 0 0;text-align:center;min-height:2.6em}
+.board{display:grid;grid-template-columns:52px repeat(15,minmax(0,1fr));gap:5px}
+.lt{border-radius:10px;display:grid;place-items:center;font-weight:900;font-size:26px;color:#fff;aspect-ratio:1}
+.lt.N{color:#1d0b14}
+.cell{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:clamp(13px,1.5vw,20px);background:var(--off);color:var(--mute);border:2px solid transparent;font-variant-numeric:tabular-nums;transition:background .3s,color .3s}
+.cell.on{background:var(--c);color:#fff;box-shadow:0 0 12px -2px var(--c)}
+.cell.last{border-color:var(--ink);animation:pulse 1.2s ease-in-out 3}
+@keyframes pulse{50%{transform:scale(1.18)}}
+.side{display:grid;gap:16px}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.small{font-size:15px;color:var(--mute);margin:6px 0 0}
+.res{margin-top:10px;font-size:16px}.res .ok{color:var(--G);font-weight:700}.res .no{color:var(--I);font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.chip{padding:2px 9px;border-radius:99px;font-size:14px;font-weight:500;background:var(--off)}
+.chip.y{background:var(--G);color:#fff}.chip.n{background:var(--I);color:#fff}
+dialog{border:2px solid var(--line);border-radius:18px;background:var(--panel);color:var(--ink);padding:22px;max-width:360px}
+dialog::backdrop{background:#0008}
+.fs body{font-size:18px}
+@media(max-width:1000px){.grid{grid-template-columns:minmax(0,1fr)}.side{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+@media(max-width:640px){.side,.row2{grid-template-columns:minmax(0,1fr)}
+ .board{grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-flow:column;grid-template-rows:auto repeat(15,auto)}
+ .lt{aspect-ratio:auto;padding:6px 0;font-size:20px}.cell{font-size:16px;aspect-ratio:auto;padding:6px 0;border-radius:10px}}
+@media(prefers-reduced-motion:reduce){.ball.roll,.cell.last{animation:none}}
+</style>
+</head>
+<body>
+<div class="band">
+<header>
+  <h1><span style="background:var(--B)">B</span><span style="background:var(--I)">I</span><span style="background:var(--N);color:#1d0b14">N</span><span style="background:var(--G)">G</span><span style="background:var(--O)">Ó</span> vélin</h1>
+  <div class="bar">
+    <button id="undo" title="Skila síðustu kúlu aftur í búrið">↶ Afturkalla</button>
+    <button id="auto" aria-pressed="false">▶ Sjálfvirkt</button>
+    <select id="speed" aria-label="Hraði sjálfvirks drætti">
+      <option value="4">á 4 sek.</option><option value="6" selected>á 6 sek.</option><option value="8">á 8 sek.</option><option value="12">á 12 sek.</option><option value="20">á 20 sek.</option>
+    </select>
+    <button id="voice" aria-pressed="false">🔈 Upplestur</button>
+    <button id="full">⛶ Fullur skjár</button>
+    <button id="new">Nýr leikur</button>
+  </div>
+</header>
+
+<div class="grid">
+  <div class="side">
+    <div class="card stage">
+      <div class="ball" id="ball"><div class="face" id="face"><em>Ýttu á „Draga kúlu“ til að byrja</em></div></div>
+      <div class="count"><b id="cnt">0</b> af 75 kúlum dregnar · <span id="left">75</span> eftir</div>
+      <button class="draw" id="draw">Draga kúlu</button>
+      <div style="width:100%"><h2 style="font-size:15px;color:var(--mute);font-weight:500;margin-bottom:6px">Síðustu kúlur</h2><div class="hist" id="hist"></div></div>
+    </div>
+    <div class="card">
+      <h2><label for="pattern">Spilakerfi</label></h2>
+      <select id="pattern" style="width:100%"></select>
+      <div style="margin-top:14px" class="pat" id="pat"></div>
+      <p class="pdesc" id="pdesc"></p>
+    </div>
+    <div class="card">
+      <h2><label for="vsel">Rödd í upplestri</label></h2>
+      <div class="bar"><select id="vsel" style="flex:1 1 160px"></select><button type="button" id="vtest">Prófa</button></div>
+      <p class="small" id="vnote"></p>
+    </div>
+  </div>
+
+  <div>
+    <div class="card"><div class="board" id="board"></div></div>
+    <div class="row2">
+      <div class="card">
+        <h2><label for="chk">Athuga bingó</label></h2>
+        <form id="chkf" class="bar">
+          <input type="text" id="chk" inputmode="numeric" placeholder="t.d. 4 19 33 51 70" style="flex:1 1 180px">
+          <button type="submit">Athuga</button>
+        </form>
+        <p class="small">Sláðu inn tölurnar á vinningsröð leikmanns. Miðjureiturinn er frír og þarf ekki að fylgja.</p>
+        <div class="res" id="res"></div>
+      </div>
+      <div class="card">
+        <h2>Dregnar tölur í röð</h2>
+        <div class="chips" id="order"><span class="small" style="margin:0">Engin kúla dregin enn.</span></div>
+        <p class="small">Bilslá dregur kúlu · Z afturkallar</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<dialog id="dlg">
+  <h2 style="font-size:20px">Byrja nýjan leik?</h2>
+  <p>Allar dregnar kúlur fara aftur í búrið. Spilakerfið helst óbreytt.</p>
+  <div class="bar" style="justify-content:flex-end"><button id="no">Hætta við</button><button id="yes" class="on">Já, nýr leikur</button></div>
+</dialog>
+
+<script>
+{
+const L=['B','I','N','G','O'];
+const letter=n=>L[Math.floor((n-1)/15)];
+const col=n=>`var(--${letter(n)})`;
+const R=r=>[0,1,2,3,4].map(c=>r*5+c), C=c=>[0,1,2,3,4].map(r=>r*5+c);
+const D1=[0,6,12,18,24], D2=[4,8,12,16,20];
+const lines=[R(0),R(1),R(2),R(3),R(4),C(0),C(1),C(2),C(3),C(4),D1,D2];
+const u=(...a)=>[...new Set(a.flat())];
+const ALL=[...Array(25).keys()];
+const PATTERNS=[
+ {id:'line',name:'Ein lína',desc:'Lárétt, lóðrétt eða á ská – hvaða lína sem er.',frames:lines},
+ {id:'two',name:'Tvær línur',desc:'Tvær heilar línur, í hvaða átt sem er.',frames:[u(R(0),R(1)),u(C(1),C(3)),u(R(2),C(2)),u(D1,D2),u(R(4),C(0)),u(R(1),D2)]},
+ {id:'three',name:'Þrjár línur',desc:'Þrjár heilar línur, í hvaða átt sem er.',frames:[u(R(0),R(2),R(4)),u(C(0),C(2),C(4)),u(R(1),C(3),D1)]},
+ {id:'corners',name:'Fjögur horn',desc:'Allir fjórir hornreitirnir.',frames:[[0,4,20,24]]},
+ {id:'x',name:'X (kross á ská)',desc:'Báðar skálínurnar.',frames:[u(D1,D2)]},
+ {id:'plus',name:'Plús',desc:'Miðröðin og miðdálkurinn.',frames:[u(R(2),C(2))]},
+ {id:'frame',name:'Rammi',desc:'Allir ytri reitirnir á spjaldinu.',frames:[u(R(0),R(4),C(0),C(4))]},
+ {id:'small',name:'Lítill rammi',desc:'Reitirnir átta umhverfis miðjuna.',frames:[[6,7,8,11,13,16,17,18]]},
+ {id:'t',name:'Stafurinn T',desc:'Efsta röðin og miðdálkurinn.',frames:[u(R(0),C(2))]},
+ {id:'l',name:'Stafurinn L',desc:'Vinstri dálkurinn og neðsta röðin.',frames:[u(C(0),R(4))]},
+ {id:'full',name:'Fullt spjald',desc:'Allir 24 reitirnir á spjaldinu þurfa að vera komnir.',frames:[ALL]},
+ {id:'custom',name:'Sérsniðið kerfi',desc:'Smelltu á reitina hér fyrir ofan til að búa til þitt eigið kerfi.',frames:[]}
+];
+
+const KEY='bingovel-v1';
+let S={drawn:[],pattern:'line',custom:[0,4,12,20,24],voice:false,speed:6};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.drawn))S={...S,...s}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+
+const $=id=>document.getElementById(id);
+const board=$('board'),pat=$('pat'),sel=$('pattern');
+
+// Tafla
+let h='';
+L.forEach((l,i)=>{
+  h+=`<div class="lt ${l}" style="background:var(--${l})">${l}</div>`;
+  for(let k=1;k<=15;k++){const n=i*15+k;h+=`<div class="cell ${l}" id="c${n}" style="--c:var(--${l})">${n}</div>`}
+});
+board.innerHTML=h;
+
+sel.innerHTML=PATTERNS.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+pat.innerHTML=ALL.map(i=>`<button type="button" class="pc" data-i="${i}" aria-label="Reitur ${i+1}">${i===12?'Frítt':''}</button>`).join('');
+
+let frame=0,ftimer=null;
+function drawPattern(){
+  const p=PATTERNS.find(x=>x.id===S.pattern)||PATTERNS[0];
+  const cells=p.id==='custom'?S.custom:(p.frames[frame%p.frames.length]||[]);
+  pat.querySelectorAll('.pc').forEach(b=>b.classList.toggle('hit',cells.includes(+b.dataset.i)));
+  pat.classList.toggle('edit',p.id==='custom');
+  $('pdesc').textContent=p.desc+(p.frames.length>1?' Dæmin skiptast hér fyrir ofan.':'');
+}
+function setPattern(id){
+  S.pattern=id;sel.value=id;frame=0;save();clearInterval(ftimer);
+  const p=PATTERNS.find(x=>x.id===id);
+  if(p&&p.frames.length>1)ftimer=setInterval(()=>{frame++;drawPattern()},1400);
+  drawPattern();
+}
+sel.addEventListener('change',()=>setPattern(sel.value));
+pat.addEventListener('click',e=>{
+  const b=e.target.closest('.pc');if(!b||S.pattern!=='custom')return;
+  const i=+b.dataset.i;S.custom=S.custom.includes(i)?S.custom.filter(x=>x!==i):[...S.custom,i];save();drawPattern();
+});
+
+function render(anim){
+  const d=S.drawn,last=d[d.length-1];
+  for(let n=1;n<=75;n++){const c=$('c'+n);c.classList.toggle('on',d.includes(n));c.classList.toggle('last',n===last)}
+  $('cnt').textContent=d.length;$('left').textContent=75-d.length;
+  const ball=$('ball'),face=$('face');
+  if(last){ball.style.setProperty('--c',col(last));face.innerHTML=`<b>${letter(last)}</b><strong>${last}</strong>`}
+  else{ball.style.removeProperty('--c');face.innerHTML=`<em>Ýttu á „Draga kúlu“ til að byrja</em>`}
+  if(anim){ball.classList.remove('roll');void ball.offsetWidth;ball.classList.add('roll')}
+  $('hist').innerHTML=d.slice(-7,-1).reverse().map(n=>`<div class="mini ${letter(n)}" style="--c:${col(n)}">${letter(n)}${n}</div>`).join('')||'<span class="small" style="margin:0;align-self:center">–</span>';
+  $('order').innerHTML=d.length?d.map((n,i)=>`<span class="chip" title="Kúla nr. ${i+1}">${letter(n)}${n}</span>`).join(''):'<span class="small" style="margin:0">Engin kúla dregin enn.</span>';
+  $('draw').disabled=d.length>=75;$('draw').textContent=d.length>=75?'Allar kúlur dregnar':'Draga kúlu';
+  $('undo').disabled=!d.length;
+}
+
+// Íslenskur upplestur
+const ONE=['','einn','tveir','þrír','fjórir','fimm','sex','sjö','átta','níu','tíu','ellefu','tólf','þrettán','fjórtán','fimmtán','sextán','sautján','átján','nítján'];
+const TENS={2:'tuttugu',3:'þrjátíu',4:'fjörutíu',5:'fimmtíu',6:'sextíu',7:'sjötíu'};
+const SAY={B:'bé',I:'í',N:'enn',G:'gé',O:'ó'};
+const isWord=n=>n<20?ONE[n]:TENS[Math.floor(n/10)]+(n%10?' og '+ONE[n%10]:'');
+const phrase=n=>`${SAY[letter(n)]}, ${isWord(n)}.`;
+const hasTTS='speechSynthesis' in window;
+let voices=[];
+const vsel=$('vsel'),vnote=$('vnote');
+function loadVoices(){
+  if(!hasTTS){vsel.innerHTML='<option>Ekki í boði</option>';vsel.disabled=true;$('vtest').disabled=true;vnote.textContent='Þessi vafri styður ekki upplestur.';return}
+  try{voices=speechSynthesis.getVoices()}catch(e){voices=[]}
+  const isl=voices.filter(v=>/^is\b/i.test(v.lang)),rest=voices.filter(v=>!/^is\b/i.test(v.lang));
+  if(!S.voiceName||!voices.some(v=>v.name===S.voiceName))S.voiceName=isl[0]?.name||'';
+  const opt=v=>`<option value="${v.name.replace(/"/g,'&quot;')}"${v.name===S.voiceName?' selected':''}>${v.name} (${v.lang})</option>`;
+  vsel.innerHTML=(isl.length?`<optgroup label="Íslenskar raddir">${isl.map(opt).join('')}</optgroup>`:'')
+    +`<option value=""${S.voiceName?'':' selected'}>Sjálfgefin rödd vafrans</option>`
+    +(rest.length?`<optgroup label="Aðrar raddir">${rest.map(opt).join('')}</optgroup>`:'');
+  vnote.textContent=isl.length
+    ?'Íslensk rödd fannst og er notuð. Tölurnar eru lesnar sem íslensk orð, t.d. „bé, fimm“.'
+    :'Engin íslensk rödd fannst í þessu tæki, svo framburðurinn verður ekki réttur. Í Microsoft Edge á Windows eru íslensku raddirnar Guðrún og Gunnar í boði – opnaðu síðuna þar.';
+}
+if(hasTTS){loadVoices();try{speechSynthesis.addEventListener('voiceschanged',loadVoices)}catch(e){}}else loadVoices();
+vsel.addEventListener('change',()=>{S.voiceName=vsel.value;save()});
+function say(text){
+  if(!hasTTS)return;
+  try{
+    speechSynthesis.cancel();
+    const t=new SpeechSynthesisUtterance(text),v=voices.find(x=>x.name===S.voiceName);
+    if(v){t.voice=v;t.lang=v.lang}else t.lang='is-IS';
+    t.rate=.85;speechSynthesis.speak(t);
+  }catch(e){}
+}
+function speak(n){if(S.voice)say(phrase(n))}
+$('vtest').addEventListener('click',()=>{const n=S.drawn[S.drawn.length-1]||42;say(phrase(n))});
+function rand(max){
+  if(window.crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%max}
+  return Math.floor(Math.random()*max);
+}
+function draw(){
+  const pool=[];for(let n=1;n<=75;n++)if(!S.drawn.includes(n))pool.push(n);
+  if(!pool.length){stopAuto();return}
+  const n=pool[rand(pool.length)];S.drawn.push(n);save();render(true);speak(n);
+  if(S.drawn.length>=75)stopAuto();
+}
+function undo(){if(!S.drawn.length)return;S.drawn.pop();save();render(false)}
+
+let atimer=null;
+function stopAuto(){clearInterval(atimer);atimer=null;$('auto').classList.remove('on');$('auto').setAttribute('aria-pressed','false');$('auto').textContent='▶ Sjálfvirkt'}
+function startAuto(){draw();atimer=setInterval(draw,S.speed*1000);$('auto').classList.add('on');$('auto').setAttribute('aria-pressed','true');$('auto').textContent='⏸ Stöðva'}
+$('auto').addEventListener('click',()=>atimer?stopAuto():startAuto());
+$('speed').value=String(S.speed);
+$('speed').addEventListener('change',e=>{S.speed=+e.target.value;save();if(atimer){stopAuto();startAuto()}});
+
+const vb=$('voice');
+const setVoice=()=>{vb.classList.toggle('on',S.voice);vb.setAttribute('aria-pressed',S.voice);vb.textContent=S.voice?'🔊 Upplestur á':'🔈 Upplestur'};
+vb.addEventListener('click',()=>{S.voice=!S.voice;save();setVoice()});setVoice();
+
+$('draw').addEventListener('click',draw);
+$('undo').addEventListener('click',undo);
+$('full').addEventListener('click',()=>{
+  try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{})}catch(e){}
+});
+const dlg=$('dlg');
+$('new').addEventListener('click',()=>{if(!S.drawn.length)return;stopAuto();try{dlg.showModal()}catch(e){reset()}});
+$('no').addEventListener('click',()=>dlg.close());
+$('yes').addEventListener('click',()=>{dlg.close();reset()});
+function reset(){S.drawn=[];save();$('res').innerHTML='';render(false)}
+
+$('chkf').addEventListener('submit',e=>{
+  e.preventDefault();
+  const nums=[...new Set(($('chk').value.match(/\d+/g)||[]).map(Number).filter(n=>n>=1&&n<=75))];
+  if(!nums.length){$('res').innerHTML='<span class="no">Engar gildar tölur (1–75) fundust.</span>';return}
+  const miss=nums.filter(n=>!S.drawn.includes(n));
+  $('res').innerHTML=(miss.length?`<span class="no">Ekki bingó – ${miss.length} ${miss.length===1?'tala er':'tölur eru'} ekki komnar.</span>`:`<span class="ok">BINGÓ! Allar ${nums.length} tölurnar eru komnar.</span>`)
+   +`<div class="chips">${nums.map(n=>`<span class="chip ${S.drawn.includes(n)?'y':'n'}">${letter(n)}${n}</span>`).join('')}</div>`;
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.target.closest('input,select,textarea')||dlg.open)return;
+  if(e.code==='Space'){e.preventDefault();if(S.drawn.length<75)draw()}
+  else if(e.key==='z'||e.key==='Z'){undo()}
+});
+
+setPattern(S.pattern);
+render(false);
+}
+</script>
+</body>
+</html>
